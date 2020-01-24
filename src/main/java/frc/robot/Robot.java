@@ -24,7 +24,6 @@ import com.revrobotics.ColorSensorV3;
 import com.revrobotics.ColorMatchResult;
 import com.revrobotics.ColorMatch;
 
-
 /**
  * This is a demo program showing the use of the RobotDrive class, specifically
  * it contains the code necessary to operate a robot with tank drive.
@@ -47,12 +46,13 @@ public class Robot extends TimedRobot {
   private final I2C.Port i2cPort = I2C.Port.kOnboard; //Change the I2C port below to match the connection of your color sensor
   private final ColorSensorV3 m_colorSensor = new ColorSensorV3(i2cPort); 
   private final ColorMatch colorMatcher = new ColorMatch();
+  // the numbers used to match color sensor values to colors
   private final Color kBlueTarget = ColorMatch.makeColor(0.143, 0.427, 0.429);
   private final Color kGreenTarget = ColorMatch.makeColor(0.197, 0.561, 0.240);
   private final Color kRedTarget = ColorMatch.makeColor(0.561, 0.232, 0.114);
   private final Color kYellowTarget = ColorMatch.makeColor(0.361, 0.524, 0.113);
-  private String previousColor;
-  private int colorChanges;
+  // private String previousColor;
+  // private int colorChanges;
   private String currentColor;
   private Color detectedColor;
   private boolean isSpinActive;
@@ -157,19 +157,19 @@ public class Robot extends TimedRobot {
     }
     
     // Converts a boolean to a 1 or 0 based on the A button state
-    if(controller.getA()){ 
+    if (controller.getA()) { 
       intakeMotor.set(1);  
     // Converts a boolean to a -1 or 0 based on the Y button state
-    } if(controller.getY()){ 
+    } if(controller.getY()) { 
       intakeMotor.set(-1);   //sets the motor to run in reverse when Y is pressed
     } else { //The motor power will be sat to 0 when neither button is pressed
       intakeMotor.set(0);
     }
 
     //Sets the motor value based on the value of the X button and the B button
-    if(controller.getX()){
+    if (controller.getX()) {
       conveyerMotor.set(1);
-    } if(controller.getB()){
+    } if (controller.getB()) {
       conveyerMotor.set(-1);
     } else {
       conveyerMotor.set(0);
