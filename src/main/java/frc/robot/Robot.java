@@ -11,7 +11,6 @@ import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 
 import edu.wpi.first.wpilibj.Joystick; //The controller
-import edu.wpi.first.wpilibj.buttons.JoystickButton; //The A B Y and X buttons
 import edu.wpi.first.wpilibj.SpeedControllerGroup; //Groups two speed controllers
 
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX; //The VictorSPX motor controllers
@@ -33,25 +32,15 @@ import com.revrobotics.ColorMatch;
 public class Robot extends TimedRobot { 
   private SpeedControllerGroup leftMotors; //Creates the object for the left motors
   private SpeedControllerGroup rightMotors; //Creates the object for the right motors
-  private SpeedControllerGroup intakeMotors; //Creates the object for the intake motors
   private SpeedControllerGroup winchMotors; //Creates the object for the winch motors
-  private WPI_VictorSPX WoFMotor; //Creates the object for the WoF motors
+  private WPI_VictorSPX controlPanelMotor; //Creates the object for the WoF motors
   private WPI_VictorSPX liftMotor; //Creates the object for the lift motors
+  private WPI_VictorSPX conveyerMotor; //creates the object for the conveyer
+  private WPI_VictorSPX intakeMotor; //Creates the object for the intake motor
   private DifferentialDrive driveTrain; //Creates the object for the drivetrain
   private Gamepad controller; //Creates the object for the contoller
 
-  //private WPI_VictorSPX intakeMotor; //Creates the object for the intake motor
-  // private JoystickButton buttonA; //Creates a container to receive a boolean from the A Button
-  // private JoystickButton buttonB; //Creates a container to receive a boolean from the B Button
-  private int intakeMotorsValue; //Creating a variable for the speed of the intake motor controller
   private int liftMotorValue; //Creating a variable for the speed of the lift motor controller
-  // private JoystickButton buttonX; //Creates a container to receive a boolean from the X Button
-  // private JoystickButton buttonY; //Creates a container to receive a boolean from the Y Button
-  // private JoystickButton buttonLb; //Creates a container to receive a boolean form the LB button
-  // private JoystickButton buttonRb; //Creates a container to receive a boolean form the RB button
-  //private WPI_VictorSPX conveyerMotor; //creates the object for the conveyer
-  //private int conveyerMotorValue;
-
   private DoubleSolenoid intakeSolenoid = new DoubleSolenoid(1, 2); //Creates the new double solenoids for the intake.
   private Compressor compressor;
 
@@ -62,13 +51,14 @@ public class Robot extends TimedRobot {
   private final Color kGreenTarget = ColorMatch.makeColor(0.197, 0.561, 0.240);
   private final Color kRedTarget = ColorMatch.makeColor(0.561, 0.232, 0.114);
   private final Color kYellowTarget = ColorMatch.makeColor(0.361, 0.524, 0.113);
-
   private String previousColor;
   private int colorChanges;
+  private String currentColor;
+  private Color detectedColor;
   private boolean isSpinActive;
+  private ColorMatchResult match;
 
-  Timer timer;
-
+  private Timer timer;
 
   @Override
   public void robotInit() {
@@ -78,24 +68,17 @@ public class Robot extends TimedRobot {
     Assigns the motor controllers to speed controller groups
     Argument(value in parenthises) is the CAN bus address
     */
-    leftMotors = new SpeedControllerGroup(new WPI_VictorSPX(1), new WPI_VictorSPX(4));
-    rightMotors = new SpeedControllerGroup(new WPI_VictorSPX(2), new WPI_VictorSPX(3));
-    intakeMotors = new SpeedControllerGroup(new WPI_VictorSPX(8), new WPI_VictorSPX(6));
-    winchMotors = new SpeedControllerGroup(new WPI_VictorSPX(9), new WPI_VictorSPX(10));
+    leftMotors = new SpeedControllerGroup(new WPI_VictorSPX(1), new WPI_VictorSPX(4)); // assigns the left motors on CAN 1 and CAN 4
+    rightMotors = new SpeedControllerGroup(new WPI_VictorSPX(2), new WPI_VictorSPX(3)); // assigns the right motors on CAN 2 and CAN 3
+    winchMotors = new SpeedControllerGroup(new WPI_VictorSPX(9), new WPI_VictorSPX(10)); // assigns the winch motors on CAN 9 and CAN 10
+    intakeMotor = new WPI_VictorSPX(8); // intake motor is assigned on CAN 8
+    conveyerMotor = new WPI_VictorSPX(6); // conveyer motor will be assigned on CAN 6
     liftMotor = new WPI_VictorSPX(7); // assigns liftMotor to CAN 7
-    WoFMotor = new WPI_VictorSPX(5); // assigns WoFMotor to CAN 8
-
-    driveTrain = new DifferentialDrive(leftMotors, rightMotors);
+    controlPanelMotor = new WPI_VictorSPX(5); // assigns controlPanelMotor to CAN 8
+    driveTrain = new DifferentialDrive(leftMotors, rightMotors); // makes the drivetrain a differential drive made of the left and right motors
+   
     // Creates the controller on USB 0
-    // controller = new Joystick(0);
     controller = new Gamepad(new Joystick(0));
-    
-    // buttonA = new JoystickButton(controller, 1); //Assigns the buttonA variable to the A button on Controller 0
-    // buttonB = new JoystickButton(controller, 2); //Assigns the buttonB variable to the B button on Controller 0
-    // buttonX = new JoystickButton(controller, 3); //Assigns button X on the controller
-    // buttonY = new JoystickButton(controller, 4); //Assigns button Y on the controller
-    // buttonLb = new JoystickButton(controller, 5); //left bumper of the controller
-    // buttonRb = new JoystickButton(controller, 6); //right bumper of the controller
 
     timer = new Timer();
 
@@ -111,56 +94,57 @@ public class Robot extends TimedRobot {
     //Sets tankDrive to the inverse of the values from the joysticks, leftStick value is 1 and rightStick value is 5
     driveTrain.tankDrive((controller.getLJoystickY()), (controller.getRJoystickY()));
 
-    //color sensor code
-    Color detectedColor = m_colorSensor.getColor();
-    String colorString;
-    ColorMatchResult match = colorMatcher.matchClosestColor(detectedColor);
+    //color sensor code - current color is stored in currentColor
+    detectedColor = m_colorSensor.getColor();
+    match = colorMatcher.matchClosestColor(detectedColor);
     if (match.color == kBlueTarget) {
-      colorString = "Blue";
+      currentColor = "Blue";
     } else if (match.color == kRedTarget) {
-      colorString = "Red";
+      currentColor = "Red";
     } else if (match.color == kGreenTarget) {
-      colorString = "Green";
+      currentColor = "Green";
     } else if (match.color == kYellowTarget) {
-      colorString = "Yellow";
+      currentColor = "Yellow";
     } else {
-      colorString = "Unknown";
+      currentColor = "Unknown";
     }
 
     if(controller.getDPadAngle() > 45 && controller.getDPadAngle() < 135){ 
-      WoFMotor.set(1);
-    //If the A button is pressed, then the conveyor and intake motors speed will be set to -1
+      controlPanelMotor.set(1);
+    //If the A button is pressed, then the control panel motor will be set to -1
     } else if(controller.getDPadAngle() > 225 && controller.getDPadAngle() < 315){ 
-      WoFMotor.set(-1);
-      //If neither A or Y button is pressed, then the conveyor and intake motors speed will be set to 0
-    } else if (!isSpinActive){
-      WoFMotor.set(0);
+      controlPanelMotor.set(-1);
+      //If neither A or Y button is pressed, then the control panel motor will be set to 0
+    } else if (!isSpinActive){ // prevent the motor from being set to 0 if it is currently spinning
+      controlPanelMotor.set(0);
     }
 
+    /*
     if (controller.getX()){ // when the X button is clicked, it turns on the WoFMotor, then resets 
-      WoFMotor.set(1);
+      controlPanelMotor.set(1);
       colorChanges = 0;
       previousColor = "Unknown";
       isSpinActive = true;
     }
     if (isSpinActive) { //it checks if the WoFMotor is still spinning due to the X button
-      if (!colorString.equals(previousColor)){ // if the color changes, it increases the number of color changes by one
+      if (!currentColor.equals(previousColor)){ // if the color changes, it increases the number of color changes by one
         colorChanges++;
-        previousColor = colorString;
+        previousColor = currentColor;
       }
       if (colorChanges >= 32){ // if the color has changed more than 32 times, it will stop the motor
-        WoFMotor.set(0);
+        controlPanelMotor.set(0);
         isSpinActive = false;
       }
     }
+    */
 
     //solenoid controls
     if(controller.getDPadAngle() > 135 && controller.getDPadAngle() < 225){ 
       intakeSolenoid.set(DoubleSolenoid.Value.kForward);
-    //If the A button is pressed, then the conveyor and intake motors speed will be set to -1
+    //If the up of the dpad is pressed, then the conveyor and intake motors speed will be set to -1
     } else if(controller.getDPadAngle() > 315 && controller.getDPadAngle() < 45){ 
       intakeSolenoid.set(DoubleSolenoid.Value.kReverse);
-      //If neither A or Y button is pressed, then the conveyor and intake motors speed will be set to 0
+    //If neither A or Y button is pressed, then the conveyor and intake motors speed will be set to 0
     } else{
       intakeSolenoid.set(DoubleSolenoid.Value.kOff);
     }
@@ -171,48 +155,25 @@ public class Robot extends TimedRobot {
     } else {
       winchMotors.set(controller.getRT() * -1);
     }
-
-    if (controller.getB()){
-      winchMotors.set(controller.getRT());
-    } else {
-      winchMotors.set(controller.getRT() * -1);
-    }
     
-    /*Converts a boolean to a 1 or 0 based on the A button state
-    if(buttonA.get() == true){ 
-      intakeMotorValue = 1;   
-    // Converts a boolean to a -1 or 0 based on the B button state
-    } if(bButton.get() == true){ 
-      intakeMotorValue = (-1);   //sets the motor to run in reverse when B is pressed
-    //The motor power will be sat to 0 when both A and B are not pressed
-    } else if(buttonA.get() == false && bButton.get() == false){
-      intakeMotorValue = 0;
-    //Sets the intake motor speed to the variable intakeMotorValue
-    intakeMotors.set(intakeMotorValue); 
-
-
-    //Sets the motor value based on the value of buttonX and buttonY
-    if(buttonX.get() == true){ 
-      conveyerMotorValue = 1;
-    } if(buttonY.get() == true){
-      conveyerMotorValue = (-1);
-    } else if(buttonX.get() == false && buttonY.get() == false){
-      conveyerMotorValue = 0;
+    // Converts a boolean to a 1 or 0 based on the A button state
+    if(controller.getA()){ 
+      intakeMotor.set(1);  
+    // Converts a boolean to a -1 or 0 based on the Y button state
+    } if(controller.getY()){ 
+      intakeMotor.set(-1);   //sets the motor to run in reverse when Y is pressed
+    } else { //The motor power will be sat to 0 when neither button is pressed
+      intakeMotor.set(0);
     }
-    */
 
-    //If the Y button is pressed, then the conveyor and intake motors speed will be set to 1
-    if(controller.getY()){ 
-      intakeMotorsValue = 1;
-    //If the A button is pressed, then the conveyor and intake motors speed will be set to -1
-    } else if(controller.getA()){
-      intakeMotorsValue = (-1);
-      //If neither A or Y button is pressed, then the conveyor and intake motors speed will be set to 0
-    } else if(controller.getA()== false && controller.getY() == false){
-      intakeMotorsValue = 0;
+    //Sets the motor value based on the value of the X button and the B button
+    if(controller.getX()){
+      conveyerMotor.set(1);
+    } if(controller.getB()){
+      conveyerMotor.set(-1);
+    } else {
+      conveyerMotor.set(0);
     }
-    //Sets the intake motors speed to the variable intakeMotorsValue..
-    intakeMotors.set(intakeMotorsValue);
    
     if(controller.getLB()){  //If the LB Button is pressed, then the lift motor speed will be set to 1
       liftMotorValue = 1;
@@ -224,11 +185,6 @@ public class Robot extends TimedRobot {
       liftMotor.set(liftMotorValue); //Sets the lift motor speed to the variable liftMotorValue
     }
   }
-
-  // @Override
-  // public void disabledInit() {
-  //   compressor.stop();
-  // }
 
   @Override
   public void autonomousInit(){
