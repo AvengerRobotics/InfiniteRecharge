@@ -38,17 +38,17 @@ public class Robot extends TimedRobot {
   private WPI_VictorSPX WoFMotor; //Creates the object for the WoF motors
   private WPI_VictorSPX liftMotor; //Creates the object for the lift motors
   private DifferentialDrive driveTrain; //Creates the object for the drivetrain
-  private Joystick controller; //Creates the object for the contoller
+  private Gamepad controller; //Creates the object for the contoller
 
   //private WPI_VictorSPX intakeMotor; //Creates the object for the intake motor
-  private JoystickButton buttonA; //Creates a container to receive a boolean from the A Button
-  private JoystickButton buttonB; //Creates a container to receive a boolean from the B Button
+  // private JoystickButton buttonA; //Creates a container to receive a boolean from the A Button
+  // private JoystickButton buttonB; //Creates a container to receive a boolean from the B Button
   private int intakeMotorsValue; //Creating a variable for the speed of the intake motor controller
   private int liftMotorValue; //Creating a variable for the speed of the lift motor controller
-  private JoystickButton buttonX; //Creates a container to receive a boolean from the X Button
-  private JoystickButton buttonY; //Creates a container to receive a boolean from the Y Button
-  private JoystickButton buttonLb; //Creates a container to receive a boolean form the LB button
-  private JoystickButton buttonRb; //Creates a container to receive a boolean form the RB button
+  // private JoystickButton buttonX; //Creates a container to receive a boolean from the X Button
+  // private JoystickButton buttonY; //Creates a container to receive a boolean from the Y Button
+  // private JoystickButton buttonLb; //Creates a container to receive a boolean form the LB button
+  // private JoystickButton buttonRb; //Creates a container to receive a boolean form the RB button
   //private WPI_VictorSPX conveyerMotor; //creates the object for the conveyer
   //private int conveyerMotorValue;
 
@@ -87,14 +87,15 @@ public class Robot extends TimedRobot {
 
     driveTrain = new DifferentialDrive(leftMotors, rightMotors);
     // Creates the controller on USB 0
-    controller = new Joystick(0);
+    // controller = new Joystick(0);
+    controller = new Gamepad(new Joystick(0));
     
-    buttonA = new JoystickButton(controller, 1); //Assigns the buttonA variable to the A button on Controller 0
-    buttonB = new JoystickButton(controller, 2); //Assigns the buttonB variable to the B button on Controller 0
-    buttonX = new JoystickButton(controller, 3); //Assigns button X on the controller
-    buttonY = new JoystickButton(controller, 4); //Assigns button Y on the controller
-    buttonLb = new JoystickButton(controller, 5); //left bumper of the controller
-    buttonRb = new JoystickButton(controller, 6); //right bumper of the controller
+    // buttonA = new JoystickButton(controller, 1); //Assigns the buttonA variable to the A button on Controller 0
+    // buttonB = new JoystickButton(controller, 2); //Assigns the buttonB variable to the B button on Controller 0
+    // buttonX = new JoystickButton(controller, 3); //Assigns button X on the controller
+    // buttonY = new JoystickButton(controller, 4); //Assigns button Y on the controller
+    // buttonLb = new JoystickButton(controller, 5); //left bumper of the controller
+    // buttonRb = new JoystickButton(controller, 6); //right bumper of the controller
 
     timer = new Timer();
 
@@ -107,46 +108,74 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopPeriodic() {
-
-    compressor.start();
-
     //Sets tankDrive to the inverse of the values from the joysticks, leftStick value is 1 and rightStick value is 5
-    driveTrain.tankDrive((controller.getRawAxis(1)*-1), (controller.getRawAxis(5)*-1));
-    
-    // controller.getPOV();
-    // if(controller.getPOV() > 45 && controller.getPOV() < 135){ 
-    //   WoFMotor.set(1);
-    // //If the A button is pressed, then the conveyor and intake motors speed will be set to -1
-    // } else if(controller.getPOV() > 225 && controller.getPOV() < 315){ 
-    //   WoFMotor.set(-1);
-    //   //If neither A or Y button is pressed, then the conveyor and intake motors speed will be set to 0
-    // } else{
-    //   WoFMotor.set(0);
-    // }
+    driveTrain.tankDrive((controller.getLJoystickY()), (controller.getRJoystickY()));
+
+    //color sensor code
+    Color detectedColor = m_colorSensor.getColor();
+    String colorString;
+    ColorMatchResult match = colorMatcher.matchClosestColor(detectedColor);
+    if (match.color == kBlueTarget) {
+      colorString = "Blue";
+    } else if (match.color == kRedTarget) {
+      colorString = "Red";
+    } else if (match.color == kGreenTarget) {
+      colorString = "Green";
+    } else if (match.color == kYellowTarget) {
+      colorString = "Yellow";
+    } else {
+      colorString = "Unknown";
+    }
+
+    if(controller.getDPadAngle() > 45 && controller.getDPadAngle() < 135){ 
+      WoFMotor.set(1);
+    //If the A button is pressed, then the conveyor and intake motors speed will be set to -1
+    } else if(controller.getDPadAngle() > 225 && controller.getDPadAngle() < 315){ 
+      WoFMotor.set(-1);
+      //If neither A or Y button is pressed, then the conveyor and intake motors speed will be set to 0
+    } else if (!isSpinActive){
+      WoFMotor.set(0);
+    }
+
+    if (controller.getX()){ // when the X button is clicked, it turns on the WoFMotor, then resets 
+      WoFMotor.set(1);
+      colorChanges = 0;
+      previousColor = "Unknown";
+      isSpinActive = true;
+    }
+    if (isSpinActive) { //it checks if the WoFMotor is still spinning due to the X button
+      if (!colorString.equals(previousColor)){ // if the color changes, it increases the number of color changes by one
+        colorChanges++;
+        previousColor = colorString;
+      }
+      if (colorChanges >= 32){ // if the color has changed more than 32 times, it will stop the motor
+        WoFMotor.set(0);
+        isSpinActive = false;
+      }
+    }
 
     //solenoid controls
-    if(controller.getPOV() > 135 && controller.getPOV() < 225){ 
+    if(controller.getDPadAngle() > 135 && controller.getDPadAngle() < 225){ 
       intakeSolenoid.set(DoubleSolenoid.Value.kForward);
     //If the A button is pressed, then the conveyor and intake motors speed will be set to -1
-    } else if(controller.getPOV() > 315 && controller.getPOV() < 45){ 
+    } else if(controller.getDPadAngle() > 315 && controller.getDPadAngle() < 45){ 
       intakeSolenoid.set(DoubleSolenoid.Value.kReverse);
       //If neither A or Y button is pressed, then the conveyor and intake motors speed will be set to 0
     } else{
       intakeSolenoid.set(DoubleSolenoid.Value.kOff);
     }
 
-
     //winch motor controls
-    if (buttonB.get()){
-      winchMotors.set(-1*controller.getRawAxis(3));
+    if (controller.getB()){
+      winchMotors.set(controller.getRT());
     } else {
-      winchMotors.set(controller.getRawAxis(3));
+      winchMotors.set(controller.getRT() * -1);
     }
 
-    if (buttonB.get()){
-      winchMotors.set(-1*controller.getRawAxis(3));
+    if (controller.getB()){
+      winchMotors.set(controller.getRT());
     } else {
-      winchMotors.set(controller.getRawAxis(3));
+      winchMotors.set(controller.getRT() * -1);
     }
     
     /*Converts a boolean to a 1 or 0 based on the A button state
@@ -173,66 +202,33 @@ public class Robot extends TimedRobot {
     */
 
     //If the Y button is pressed, then the conveyor and intake motors speed will be set to 1
-    if(buttonY.get() == true){ 
+    if(controller.getY()){ 
       intakeMotorsValue = 1;
     //If the A button is pressed, then the conveyor and intake motors speed will be set to -1
-    } else if(buttonA.get() == true){
+    } else if(controller.getA()){
       intakeMotorsValue = (-1);
       //If neither A or Y button is pressed, then the conveyor and intake motors speed will be set to 0
-    } else if(buttonY.get() == false && buttonA.get() == false){
+    } else if(controller.getA()== false && controller.getY() == false){
       intakeMotorsValue = 0;
     }
     //Sets the intake motors speed to the variable intakeMotorsValue..
-    
     intakeMotors.set(intakeMotorsValue);
    
-    if(buttonLb.get() == true){  //If the LB Button is pressed, then the lift motor speed will be set to 1
+    if(controller.getLB()){  //If the LB Button is pressed, then the lift motor speed will be set to 1
       liftMotorValue = 1;
-    } else if(buttonRb.get() == true){ //If the RB Button is pressed, then the lift motor speed will be set to -1
+    } else if(controller.getRB()){ //If the RB Button is pressed, then the lift motor speed will be set to -1
       liftMotorValue = -1;
-    } else if(buttonLb.get() == false && buttonRb.get() == false){  //If neither LB or RB button is pressed, then the lift motor speed will be set to 0
+    } else if(!controller.getRB() && !controller.getLB()){  //If neither LB or RB button is pressed, then the lift motor speed will be set to 0
       liftMotorValue = 0;
-    }
-    liftMotor.set(liftMotorValue); //Sets the lift motor speed to the variable liftMotorValue
-
-    //color sensor code
-    Color detectedColor = m_colorSensor.getColor();
-    String colorString;
-    ColorMatchResult match = colorMatcher.matchClosestColor(detectedColor);
-    if (match.color == kBlueTarget) {
-      colorString = "Blue";
-    } else if (match.color == kRedTarget) {
-      colorString = "Red";
-    } else if (match.color == kGreenTarget) {
-      colorString = "Green";
-    } else if (match.color == kYellowTarget) {
-      colorString = "Yellow";
     } else {
-      colorString = "Unknown";
-    }
-
-    if (buttonX.get()) { // when the x button is clicked, it turns on the WoFMotor, then resets 
-      WoFMotor.set(1);
-      colorChanges = 0;
-      previousColor = "Unknown";
-      isSpinActive = true;
-    }
-    if (isSpinActive) { //it checks if the WoFMotor is still spinning due to the X button
-      if (!colorString.equals(previousColor)){ // if the color changes, it increases the number of color changes by one
-        colorChanges++;
-        previousColor = colorString;
-      }
-      if (colorChanges >= 32){ // if the color has changed more than 25 times, it will stop the motor
-        WoFMotor.set(0);
-        isSpinActive = false;
-      }
+      liftMotor.set(liftMotorValue); //Sets the lift motor speed to the variable liftMotorValue
     }
   }
 
-  @Override
-  public void disabledInit() {
-    compressor.stop();
-  }
+  // @Override
+  // public void disabledInit() {
+  //   compressor.stop();
+  // }
 
   @Override
   public void autonomousInit(){
