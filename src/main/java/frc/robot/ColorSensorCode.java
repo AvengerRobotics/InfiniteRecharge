@@ -42,7 +42,7 @@ public class ColorSensorCode{
     m_colorMatcher.addColorMatch(kGreenTarget);
     m_colorMatcher.addColorMatch(kRedTarget);
     m_colorMatcher.addColorMatch(kYellowTarget);
-    // initColorMap();
+    initColorMap();
    }
 
   public void teleOpRun(){ 
@@ -95,11 +95,11 @@ public class ColorSensorCode{
       }
     }
   }
-  // private void initColorMap(){
-  //   colorMap = new HashMap<String, String>();
-  //   colorMap.put("B", "Red");
-  //   colorMap.put("Y", "Green");
-  //   colorMap.put("R", "Blue");
-  //   colorMap.put("G", "Yellow");
-  // }
+  private void initColorMap(){
+    colorMap = new HashMap<String, String>();
+    colorMap.put("B", "Red");
+    colorMap.put("Y", "Green");
+    colorMap.put("R", "Blue");
+    colorMap.put("G", "Yellow");
+  }
 }

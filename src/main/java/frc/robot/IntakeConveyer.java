@@ -14,9 +14,10 @@ public class IntakeConveyer{
     private boolean isConveyerEnabled = true;
     private boolean isDumping = false;
 
-    public IntakeConveyer(WPI_VictorSPX conveyer, WPI_VictorSPX intake, Joystick buttonPanel, DigitalInput prox1, DigitalInput prox2, DigitalInput prox3){
+    public IntakeConveyer(WPI_VictorSPX conveyer, WPI_VictorSPX intake, Joystick Panel, DigitalInput prox1, DigitalInput prox2, DigitalInput prox3){
         conveyerMotor = conveyer;
         intakeMotor = intake;
+        buttonPanel = Panel;
         proximitySwitch1 = prox1;
         proximitySwitch2 = prox2;
         proximitySwitch3 = prox3;
@@ -36,7 +37,7 @@ public class IntakeConveyer{
     //   //if prox2 and prox3 are true, then the intake motor power will be set to 0.5
     // } else {
     //   intakeMotor.set(0.5);  
-
+    // }
     // //If button 1 on the control panel is pressed, then the conveyer and intake motor power is set to 0.5
     // if(buttonPanel.getRawButton(1)){  
     //   conveyerMotor.set(0.5);

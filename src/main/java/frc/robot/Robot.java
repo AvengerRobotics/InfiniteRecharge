@@ -8,16 +8,15 @@
 package frc.robot; //The robot
 
 import edu.wpi.first.wpilibj.DoubleSolenoid;
-
 import edu.wpi.first.wpilibj.Joystick; //The controller
 import edu.wpi.first.wpilibj.SpeedControllerGroup; //Groups two speed controllers
-
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX; //The VictorSPX motor controllers
 import edu.wpi.first.wpilibj.TimedRobot; //The class that a user program is based on -- not much other info is given
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive; //used for driving differential drive/skid-steer drive platforms
 import edu.wpi.first.wpilibj.I2C; //the I2C port on the Roborio
 import com.revrobotics.ColorSensorV3;
+import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DigitalInput;
 
 public class Robot extends TimedRobot { 
@@ -33,7 +32,8 @@ public class Robot extends TimedRobot {
   private int liftMotorValue; //Creating a variable for the speed of the lift motor controller
 
   private IntakeConveyer intakeConveyer;
-  private Solenoid intakeSolenoid;
+  private IntakeSolenoid intakeSolenoid;
+  private Compressor compressor;
   private ColorSensorCode colorSensorCode;
   // private DigitalInput proximitySwitch1, proximitySwitch2, proximitySwitch3; //creates the proximity switches for conveyer and intake
   private Timer timer; //creates timer
@@ -50,15 +50,18 @@ public class Robot extends TimedRobot {
     winchMotors = new SpeedControllerGroup(new WPI_VictorSPX(9), new WPI_VictorSPX(10)); // assigns the winch motors on CAN 9 and CAN 10
     liftMotor = new WPI_VictorSPX(7); // assigns liftMotor to CAN 7
     driveTrain = new DifferentialDrive(leftMotors, rightMotors); // makes the drivetrain a differential drive made of the left and right motors
+    compressor = new Compressor();
    
-    intakeConveyer = new IntakeConveyer(new WPI_VictorSPX(6), new WPI_VictorSPX(8), buttonPanel, new DigitalInput(0), new DigitalInput(1), new DigitalInput(2));
-    intakeSolenoid = new Solenoid(new DoubleSolenoid(1, 2), controller);
-    colorSensorCode = new ColorSensorCode(new WPI_VictorSPX(5), buttonPanel, new ColorSensorV3(I2C.Port.kOnboard));
-
     controller = new Gamepad(new Joystick(0)); // Creates the controller on USB 0
     buttonPanel = new Joystick(1); // Creates the button panel on USB 1
 
+    intakeConveyer = new IntakeConveyer(new WPI_VictorSPX(6), new WPI_VictorSPX(8), buttonPanel, new DigitalInput(0), new DigitalInput(1), new DigitalInput(2));
+    intakeSolenoid = new IntakeSolenoid(new DoubleSolenoid(2, 3), controller);
+    colorSensorCode = new ColorSensorCode(new WPI_VictorSPX(5), buttonPanel, new ColorSensorV3(I2C.Port.kOnboard));
+
     timer = new Timer(); //timer method for autonomous
+
+    compressor.start();
   }
 
   @Override
@@ -134,9 +137,8 @@ public class Robot extends TimedRobot {
       liftMotorValue = -1;
     } else if(!controller.getRB() && !controller.getLB()){  //If neither LB or RB button is pressed, then the lift motor speed will be set to 0
       liftMotorValue = 0;
-    } else {
-      liftMotor.set(liftMotorValue); //Sets the lift motor speed to the variable liftMotorValue
     }
+      liftMotor.set(liftMotorValue); //Sets the lift motor speed to the variable liftMotorValue
   }
 
 /*
@@ -246,10 +248,16 @@ public class Robot extends TimedRobot {
 //   colorMap.put("R", kBlueTarget);
 //   colorMap.put("G", kYellowTarget);
 // }*/
-  @Override
+
+@Override
   public void autonomousInit(){
     timer.reset();
     timer.start();
+  }
+
+  @Override
+  public void disabledInit(){
+    compressor.stop();
   }
 
   @Override
