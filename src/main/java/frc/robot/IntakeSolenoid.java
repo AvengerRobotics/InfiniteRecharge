@@ -6,9 +6,9 @@ public class IntakeSolenoid{
     private Gamepad controller;
     private DoubleSolenoid intakeSolenoid;
     
-    public IntakeSolenoid(DoubleSolenoid solenoid, Gamepad gamepad){
+    public IntakeSolenoid(DoubleSolenoid solenoid, Gamepad controller){
       intakeSolenoid = solenoid;
-      controller = gamepad;
+      this.controller = controller;
     }
 
     public void teleOpRun() {

@@ -5,8 +5,8 @@ import edu.wpi.first.wpilibj.Joystick;
 public class Gamepad{
     Joystick controller;
 
-    public Gamepad(Joystick gamepad){
-        controller = gamepad;
+    public Gamepad(Joystick controller){
+        this.controller = controller;
     }
 
     public boolean getA(){

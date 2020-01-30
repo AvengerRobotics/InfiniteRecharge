@@ -15,8 +15,10 @@ public class WinchNLift {
     private int liftValue;
 
 
-    public WinchNLift(WPI_VictorSPX winch1, WPI_VictorSPX winch2, WPI_VictorSPX lift, Gamepad controller){
-        winchMotors = new SpeedControllerGroup(winch1, winch2);
+    public WinchNLift(WPI_VictorSPX winch1, WPI_VictorSPX winch2, WPI_VictorSPX liftMotor, Gamepad controller){
+      winchMotors = new SpeedControllerGroup(winch1, winch2);
+      this.liftMotor = liftMotor;
+      this.controller = controller;
     }
 
     public void teleOpRun() {
