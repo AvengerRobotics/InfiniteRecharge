@@ -22,17 +22,18 @@ import edu.wpi.first.wpilibj.DigitalInput;
 public class Robot extends TimedRobot { 
   private SpeedControllerGroup leftMotors; //Creates the object for the left motors
   private SpeedControllerGroup rightMotors; //Creates the object for the right motors
-  private SpeedControllerGroup winchMotors; //Creates the object for the winch motors
-  private WPI_VictorSPX liftMotor; //Creates the object for the lift motors
+  // private SpeedControllerGroup winchMotors; //Creates the object for the winch motors
+  //private WPI_VictorSPX liftMotor; //Creates the object for the lift motors
   private DifferentialDrive driveTrain; //Creates the object for the drivetrain
 
   private Gamepad controller; //Creates the object for the contoller
   private Joystick buttonPanel;
 
-  private int liftMotorValue; //Creating a variable for the speed of the lift motor controller
+  //private int liftMotorValue; //Creating a variable for the speed of the lift motor controller
 
   private IntakeConveyer intakeConveyer;
   private IntakeSolenoid intakeSolenoid;
+  private WinchNLift winchNLift;
   private Compressor compressor;
   private ColorSensorCode colorSensorCode;
   // private DigitalInput proximitySwitch1, proximitySwitch2, proximitySwitch3; //creates the proximity switches for conveyer and intake
@@ -47,14 +48,14 @@ public class Robot extends TimedRobot {
     */
     leftMotors = new SpeedControllerGroup(new WPI_VictorSPX(1), new WPI_VictorSPX(4)); // assigns the left motors on CAN 1 and CAN 4
     rightMotors = new SpeedControllerGroup(new WPI_VictorSPX(2), new WPI_VictorSPX(3)); // assigns the right motors on CAN 2 and CAN 3
-    winchMotors = new SpeedControllerGroup(new WPI_VictorSPX(9), new WPI_VictorSPX(10)); // assigns the winch motors on CAN 9 and CAN 10
-    liftMotor = new WPI_VictorSPX(7); // assigns liftMotor to CAN 7
+    //liftMotor = new WPI_VictorSPX(7); // assigns liftMotor to CAN 7
     driveTrain = new DifferentialDrive(leftMotors, rightMotors); // makes the drivetrain a differential drive made of the left and right motors
     compressor = new Compressor();
    
     controller = new Gamepad(new Joystick(0)); // Creates the controller on USB 0
-    buttonPanel = new Joystick(1); // Creates the button panel on USB 1
+    buttonPanel = new Joystick(1); // Creat2es the button panel on USB 1
 
+    winchNLift = new WinchNLift(new WPI_VictorSPX(9), new WPI_VictorSPX(10), new WPI_VictorSPX(7), controller);  // assigns the winch motors on CAN 9 and CAN 10
     intakeConveyer = new IntakeConveyer(new WPI_VictorSPX(6), new WPI_VictorSPX(8), buttonPanel, new DigitalInput(0), new DigitalInput(1), new DigitalInput(2));
     intakeSolenoid = new IntakeSolenoid(new DoubleSolenoid(2, 3), controller);
     colorSensorCode = new ColorSensorCode(new WPI_VictorSPX(5), buttonPanel, new ColorSensorV3(I2C.Port.kOnboard));
@@ -68,7 +69,11 @@ public class Robot extends TimedRobot {
   public void teleopPeriodic() {
     //Sets tankDrive to the inverse of the values from the joysticks, leftStick value is 1 and rightStick value is 5
     driveTrain.tankDrive((controller.getLJoystickY()), (controller.getRJoystickY()));
-    
+    intakeConveyer.teleOpRun(); //method for intake and conveyer controls
+    intakeSolenoid.teleOpRun(); //method for solenoid controls
+    colorSensorCode.teleOpRun(); //method for color sensor
+    winchNLift.teleOpRun();
+  }
     /* if(controller.getDPadAngle() > 45 && controller.getDPadAngle() < 135){ 
     //   controlPanelMotor.set(1);
     // //If the A button is pressed, then the control panel motor will be set to -1
@@ -97,24 +102,22 @@ public class Robot extends TimedRobot {
     // } else {
     //   conveyerMotor.set(0);
     // } */
-    LiftControls(); //method for lift motor code below
+/*
+    // LiftControls(); //method for lift motor code below
 
-    intakeConveyer.teleOpRun(); //method for intake and conveyer controls
-    intakeSolenoid.teleOpRun(); //method for solenoid controls
-    colorSensorCode.teleOpRun(); //method for color sensor
+    
+   // WinchMotor(); //method for winch motor below
+ // }
 
-    WinchMotor(); //method for winch motor below
-  }
-
-  private void WinchMotor() {
-    //winch motor controls
-    if (controller.getB()){
-      winchMotors.set(controller.getRT());
-    } else {
-      winchMotors.set(controller.getRT() * -1);
-    }
-  }
-
+  // private void WinchMotor() {
+  //   //winch motor controls
+  //   if (controller.getB()){
+  //     winchMotors.set(controller.getRT());
+  //   } else {
+  //     winchMotors.set(controller.getRT() * -1);
+  //   }
+  // }
+  */
   /*
   // private void SolenoidControls() {
   //   //solenoid controls
@@ -129,18 +132,18 @@ public class Robot extends TimedRobot {
   //   }
   // }
   */
-
-  private void LiftControls() {
-    if(controller.getLB()){  //If the LB Button is pressed, then the lift motor speed will be set to 1
-      liftMotorValue = 1;
-    } else if(controller.getRB()){ //If the RB Button is pressed, then the lift motor speed will be set to -1
-      liftMotorValue = -1;
-    } else if(!controller.getRB() && !controller.getLB()){  //If neither LB or RB button is pressed, then the lift motor speed will be set to 0
-      liftMotorValue = 0;
-    }
-      liftMotor.set(liftMotorValue); //Sets the lift motor speed to the variable liftMotorValue
-  }
-
+/*
+  // private void LiftControls() {
+  //   if(controller.getLB()){  //If the LB Button is pressed, then the lift motor speed will be set to 1
+  //     liftMotorValue = 1;
+  //   } else if(controller.getRB()){ //If the RB Button is pressed, then the lift motor speed will be set to -1
+  //     liftMotorValue = -1;
+  //   } else if(!controller.getRB() && !controller.getLB()){  //If neither LB or RB button is pressed, then the lift motor speed will be set to 0
+  //     liftMotorValue = 0;
+  //   }
+  //     liftMotor.set(liftMotorValue); //Sets the lift motor speed to the variable liftMotorValue
+  // }
+*/
 /*
   private void IntakeNConveyer() {
     //if prox1 and prox 2 are broken, then the conveyer motor will stop
