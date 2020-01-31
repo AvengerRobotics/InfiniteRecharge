@@ -9,6 +9,7 @@ package frc.robot; //The robot
 
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Joystick; //The controller
+import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.SpeedControllerGroup; //Groups two speed controllers
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX; //The VictorSPX motor controllers
 import edu.wpi.first.wpilibj.TimedRobot; //The class that a user program is based on -- not much other info is given
@@ -22,6 +23,7 @@ import edu.wpi.first.wpilibj.DigitalInput;
 public class Robot extends TimedRobot { 
   private SpeedControllerGroup leftMotors; //Creates the object for the left motors
   private SpeedControllerGroup rightMotors; //Creates the object for the right motors
+  // private Servo servo;
   // private SpeedControllerGroup winchMotors; //Creates the object for the winch motors
   //private WPI_VictorSPX liftMotor; //Creates the object for the lift motors
   private DifferentialDrive driveTrain; //Creates the object for the drivetrain
@@ -37,7 +39,10 @@ public class Robot extends TimedRobot {
   private Compressor compressor;
   private ColorSensorCode colorSensorCode;
   // private DigitalInput proximitySwitch1, proximitySwitch2, proximitySwitch3; //creates the proximity switches for conveyer and intake
+  private SimpleAuto simpleAuto;
+  private AdvancedAuto1 advancedAuto1;
   private Timer timer; //creates timer
+  private final String currentAuto = "Simple";
 
   @Override
   public void robotInit() {
@@ -48,6 +53,7 @@ public class Robot extends TimedRobot {
     */
     leftMotors = new SpeedControllerGroup(new WPI_VictorSPX(1), new WPI_VictorSPX(4)); // assigns the left motors on CAN 1 and CAN 4
     rightMotors = new SpeedControllerGroup(new WPI_VictorSPX(2), new WPI_VictorSPX(3)); // assigns the right motors on CAN 2 and CAN 3
+    // servo = new Servo(0);
     //liftMotor = new WPI_VictorSPX(7); // assigns liftMotor to CAN 7
     driveTrain = new DifferentialDrive(leftMotors, rightMotors); // makes the drivetrain a differential drive made of the left and right motors
     compressor = new Compressor();
@@ -61,6 +67,8 @@ public class Robot extends TimedRobot {
     colorSensorCode = new ColorSensorCode(new WPI_VictorSPX(5), buttonPanel, new ColorSensorV3(I2C.Port.kOnboard));
 
     timer = new Timer(); //timer method for autonomous
+    simpleAuto = new SimpleAuto(timer, driveTrain);
+    advancedAuto1 = new AdvancedAuto1(driveTrain, timer, intakeConveyer);
 
     compressor.start();
   }
@@ -73,6 +81,8 @@ public class Robot extends TimedRobot {
     intakeSolenoid.teleOpRun(); //method for solenoid controls
     colorSensorCode.teleOpRun(); //method for color sensor
     winchNLift.teleOpRun();
+    compressor.start();
+    // servo.setAngle();
   }
     /* if(controller.getDPadAngle() > 45 && controller.getDPadAngle() < 135){ 
     //   controlPanelMotor.set(1);
@@ -254,6 +264,7 @@ public class Robot extends TimedRobot {
 
 @Override
   public void autonomousInit(){
+    compressor.start();
     timer.reset();
     timer.start();
   }
@@ -265,10 +276,13 @@ public class Robot extends TimedRobot {
 
   @Override
   public void autonomousPeriodic(){
-    if (timer.get() < 7){
-      driveTrain.tankDrive(0.6,0.6);
-    } else { 
-      driveTrain.stopMotor();
+    switch (currentAuto){
+      case "Simple":
+        simpleAuto.run();
+        break;
+      case "Advanced1":
+        advancedAuto1.run();
+        break;
     }
   }
 }

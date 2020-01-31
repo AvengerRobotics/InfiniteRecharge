@@ -83,4 +83,19 @@ public class IntakeConveyer{
     SmartDashboard.putBoolean("Proximity Switch 3", prox3.get());   
         
   }
+
+  public void dump(){
+    if (!isDumping){
+      conveyerMotor.set(1);
+      isDumping = true;
+    }
+    if (isDumping = true && !prox1.get() && !prox2.get() && !prox3.get()){
+      isDumping = false;
+      conveyerMotor.set(0);
+      intakeMotor.set(1);
+    }
+  }
+  public boolean isDumping(){
+    return isDumping;
+  }
 }
