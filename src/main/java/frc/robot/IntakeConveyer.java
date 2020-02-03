@@ -24,32 +24,6 @@ public class IntakeConveyer{
     }
 
     public void teleOpRun() {
-/*
-    // //if prox1 and prox 2 are broken, then the conveyer motor will stop
-    // if(!prox1.get() && !prox2.get()){  
-    //   conveyerMotor.set(0);
-    //   //if prox1 and prox 2 are true, then the conveyer motor power will be set to 0.5
-    // } else {
-    //   conveyerMotor.set(0.5);
-    // }
-    // //if prox2 and prox3 are broken, then the intake motor will stop
-    // if(!prox2.get() && !prox3.get()){  
-    //   intakeMotor.set(0);
-    //   //if prox2 and prox3 are true, then the intake motor power will be set to 0.5
-    // } else {
-    //   intakeMotor.set(0.5);  
-    // }
-    // //If button 1 on the control panel is pressed, then the conveyer and intake motor power is set to 0.5
-    // if(buttonPanel.getRawButton(1)){  
-    //   conveyerMotor.set(0.5);
-    //   intakeMotor.set(0.5);
-    // } 
-    // //If button 2 on the control panel is pressed, then the conveyer and intake motor power is set to -0.5
-    // if(buttonPanel.getRawButton(2)){  
-    //   conveyerMotor.set(-0.5);
-    //   intakeMotor.set(-0.5);
-    // }
-*/
     //if switch one is triggered it will turn on the conveyer
     if (prox1.get() && isConveyerEnabled){
       conveyerMotor.set(.5);
