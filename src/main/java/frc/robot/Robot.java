@@ -9,40 +9,47 @@ package frc.robot; //The robot
 
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Joystick; //The controller
-import edu.wpi.first.wpilibj.Servo;
+// import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.SpeedControllerGroup; //Groups two speed controllers
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX; //The VictorSPX motor controllers
 import edu.wpi.first.wpilibj.TimedRobot; //The class that a user program is based on -- not much other info is given
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive; //used for driving differential drive/skid-steer drive platforms
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.I2C; //the I2C port on the Roborio
 import com.revrobotics.ColorSensorV3;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DigitalInput;
 
+import edu.wpi.cscore.CvSink;
+import edu.wpi.cscore.CvSource;
+import edu.wpi.cscore.MjpegServer;
+import edu.wpi.cscore.UsbCamera;
+import edu.wpi.cscore.VideoMode.PixelFormat;
+
 public class Robot extends TimedRobot { 
   private SpeedControllerGroup leftMotors; //Creates the object for the left motors
   private SpeedControllerGroup rightMotors; //Creates the object for the right motors
   // private Servo servo;
-  // private SpeedControllerGroup winchMotors; //Creates the object for the winch motors
-  //private WPI_VictorSPX liftMotor; //Creates the object for the lift motors
   private DifferentialDrive driveTrain; //Creates the object for the drivetrain
 
   private Gamepad controller; //Creates the object for the contoller
   private Joystick buttonPanel;
-
-  //private int liftMotorValue; //Creating a variable for the speed of the lift motor controller
 
   private IntakeConveyer intakeConveyer;
   private IntakeSolenoid intakeSolenoid;
   private WinchNLift winchNLift;
   private Compressor compressor;
   private ColorSensorCode colorSensorCode;
-  // private DigitalInput proximitySwitch1, proximitySwitch2, proximitySwitch3; //creates the proximity switches for conveyer and intake
+  
   private SimpleAuto simpleAuto;
   private AdvancedAuto1 advancedAuto1;
+  private MjpegServer mjpegServer1;
+  private MjpegServer mjpegServer2;
+  private UsbCamera usbCamera;
+  private CvSink cvSink;
   private Timer timer; //creates timer
-  private final String currentAuto = "Simple";
+  private final String currentAuto = "Advanced1";
 
   @Override
   public void robotInit() {
@@ -53,8 +60,6 @@ public class Robot extends TimedRobot {
     */
     leftMotors = new SpeedControllerGroup(new WPI_VictorSPX(1), new WPI_VictorSPX(4)); // assigns the left motors on CAN 1 and CAN 4
     rightMotors = new SpeedControllerGroup(new WPI_VictorSPX(2), new WPI_VictorSPX(3)); // assigns the right motors on CAN 2 and CAN 3
-    // servo = new Servo(0);
-    //liftMotor = new WPI_VictorSPX(7); // assigns liftMotor to CAN 7
     driveTrain = new DifferentialDrive(leftMotors, rightMotors); // makes the drivetrain a differential drive made of the left and right motors
     compressor = new Compressor();
    
@@ -65,6 +70,18 @@ public class Robot extends TimedRobot {
     intakeConveyer = new IntakeConveyer(new WPI_VictorSPX(6), new WPI_VictorSPX(8), buttonPanel, new DigitalInput(0), new DigitalInput(1), new DigitalInput(2));
     intakeSolenoid = new IntakeSolenoid(new DoubleSolenoid(2, 3), controller);
     colorSensorCode = new ColorSensorCode(new WPI_VictorSPX(5), buttonPanel, new ColorSensorV3(I2C.Port.kOnboard));
+    // Creates UsbCamera and MjpegServer [1] and connects them
+    usbCamera = new UsbCamera("USB Camera 1", 1);
+    mjpegServer1 = new MjpegServer("serve_USB Camera 1", 1181);
+    mjpegServer1.setSource(usbCamera);
+    // Creates the CvSink and connects it to the UsbCamera
+    cvSink = new CvSink("opencv_USB Camera 1");
+    cvSink.setSource(usbCamera);
+    // Creates the CvSource and MjpegServer [2] and connects them
+    CvSource outputStream = new CvSource("Blur", PixelFormat.kMJPEG, 640, 480, 30);
+    mjpegServer2 = new MjpegServer("serve_Blur", 1182);
+    mjpegServer2.setSource(outputStream);
+   // SmartDashboard.;
 
     timer = new Timer(); //timer method for autonomous
     simpleAuto = new SimpleAuto(timer, driveTrain);

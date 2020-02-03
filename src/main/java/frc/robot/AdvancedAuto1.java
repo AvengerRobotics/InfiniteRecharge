@@ -7,6 +7,7 @@ public class AdvancedAuto1{
     private DifferentialDrive driveTrain;
     private Timer timer;
     private IntakeConveyer intakeConveyer;
+    
     public AdvancedAuto1(DifferentialDrive driveTrain, Timer timer, IntakeConveyer intakeConveyer){
         this.driveTrain = driveTrain;
         this.timer = timer;

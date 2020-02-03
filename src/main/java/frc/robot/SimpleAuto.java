@@ -13,7 +13,7 @@ public class SimpleAuto{
     }
 
     public void run(){
-        if (timer.get() < 7){
+        if (timer.get() < 300){
             driveTrain.tankDrive(0.6,0.6);
             } else { 
             driveTrain.stopMotor();
