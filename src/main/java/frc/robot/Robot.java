@@ -70,6 +70,7 @@ public class Robot extends TimedRobot {
     intakeConveyer = new IntakeConveyer(new WPI_VictorSPX(6), new WPI_VictorSPX(8), buttonPanel, new DigitalInput(0), new DigitalInput(1), new DigitalInput(2));
     intakeSolenoid = new IntakeSolenoid(new DoubleSolenoid(2, 3), controller);
     colorSensorCode = new ColorSensorCode(new WPI_VictorSPX(5), buttonPanel, new ColorSensorV3(I2C.Port.kOnboard));
+    
     // Creates UsbCamera and MjpegServer [1] and connects them
     usbCamera = new UsbCamera("USB Camera 1", 1);
     mjpegServer1 = new MjpegServer("serve_USB Camera 1", 1181);
@@ -81,6 +82,7 @@ public class Robot extends TimedRobot {
     CvSource outputStream = new CvSource("Blur", PixelFormat.kMJPEG, 640, 480, 30);
     mjpegServer2 = new MjpegServer("serve_Blur", 1182);
     mjpegServer2.setSource(outputStream);
+
    // SmartDashboard.;
 
     timer = new Timer(); //timer method for autonomous
