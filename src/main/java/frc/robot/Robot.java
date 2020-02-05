@@ -15,17 +15,18 @@ import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX; //The VictorSPX motor co
 import edu.wpi.first.wpilibj.TimedRobot; //The class that a user program is based on -- not much other info is given
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive; //used for driving differential drive/skid-steer drive platforms
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.I2C; //the I2C port on the Roborio
 import com.revrobotics.ColorSensorV3;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 
-import edu.wpi.cscore.CvSink;
-import edu.wpi.cscore.CvSource;
-import edu.wpi.cscore.MjpegServer;
-import edu.wpi.cscore.UsbCamera;
-import edu.wpi.cscore.VideoMode.PixelFormat;
+// import edu.wpi.cscore.CvSink;
+// import edu.wpi.cscore.CvSource;
+// import edu.wpi.cscore.MjpegServer;
+// import edu.wpi.cscore.UsbCamera;
+// import edu.wpi.cscore.VideoMode.PixelFormat;
 
 public class Robot extends TimedRobot { 
   private SpeedControllerGroup leftMotors; //Creates the object for the left motors
@@ -41,13 +42,12 @@ public class Robot extends TimedRobot {
   private WinchNLift winchNLift;
   private Compressor compressor;
   private ColorSensorCode colorSensorCode;
-  
+
   private SimpleAuto simpleAuto;
   private AdvancedAuto1 advancedAuto1;
-  private MjpegServer mjpegServer1;
-  private MjpegServer mjpegServer2;
-  private UsbCamera usbCamera;
-  private CvSink cvSink;
+  // private MjpegServer mjpegServer2;
+  // private UsbCamera usbCamera;
+  // private CvSink cvSink;
   private Timer timer; //creates timer
   private final String currentAuto = "Advanced1";
 
@@ -70,20 +70,17 @@ public class Robot extends TimedRobot {
     intakeConveyer = new IntakeConveyer(new WPI_VictorSPX(6), new WPI_VictorSPX(8), buttonPanel, new DigitalInput(0), new DigitalInput(1), new DigitalInput(2));
     intakeSolenoid = new IntakeSolenoid(new DoubleSolenoid(2, 3), controller);
     colorSensorCode = new ColorSensorCode(new WPI_VictorSPX(5), buttonPanel, new ColorSensorV3(I2C.Port.kOnboard));
-    
-    // Creates UsbCamera and MjpegServer [1] and connects them
-    usbCamera = new UsbCamera("USB Camera 1", 1);
-    mjpegServer1 = new MjpegServer("serve_USB Camera 1", 1181);
-    mjpegServer1.setSource(usbCamera);
-    // Creates the CvSink and connects it to the UsbCamera
-    cvSink = new CvSink("opencv_USB Camera 1");
-    cvSink.setSource(usbCamera);
-    // Creates the CvSource and MjpegServer [2] and connects them
-    CvSource outputStream = new CvSource("Blur", PixelFormat.kMJPEG, 640, 480, 30);
-    mjpegServer2 = new MjpegServer("serve_Blur", 1182);
-    mjpegServer2.setSource(outputStream);
+    CameraServer.getInstance().startAutomaticCapture("camera_serve_0", 0); // adds a source to the cameraserver from the camera on port 0
+    // // Creates the CvSink and connects it to the UsbCamera
+    // cvSink = new CvSink("opencv_USB Camera 1");
+    // cvSink.setSource(usbCamera);
+    // // Creates the CvSource and MjpegServer [2] and connects them
+    // CvSource outputStream = new CvSource("Blur", PixelFormat.kMJPEG, 640, 480, 30);
 
-   // SmartDashboard.;
+    // mjpegServer2 = new MjpegServer("serve_Blur", 1182);
+    // mjpegServer2.setSource(outputStream);
+
+    //SmartDashboard.putRaw(usbCamera);
 
     timer = new Timer(); //timer method for autonomous
     simpleAuto = new SimpleAuto(timer, driveTrain);
