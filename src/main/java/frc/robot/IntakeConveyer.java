@@ -1,23 +1,23 @@
 package frc.robot;
 
-import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
+import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX; //motors
 
-import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.DigitalInput; //Sensors
+import edu.wpi.first.wpilibj.Joystick; //controller
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard; //smartDashboard display
 
 public class IntakeConveyer{
-    private WPI_VictorSPX conveyerMotor;
-    private WPI_VictorSPX intakeMotor;
+    private WPI_VictorSPX conveyerMotor; //creates the conveyer motor to move the balls
+    private WPI_VictorSPX intakeMotor; //intake to bring the balls into the robot
     private DigitalInput prox1, prox2, prox3; //creates the proximity switches for conveyer and intake
-    private Joystick buttonPanel;
-    private boolean isConveyerEnabled = true;
-    private boolean isDumping = false;
+    private Joystick buttonPanel; //breates the button panel
+    private boolean isConveyerEnabled = true; //boolean to test if the conveyer is enabled 
+    private boolean isDumping = false; //boolean to test if the conveter is enable ed to dump the balls
 
     public IntakeConveyer(WPI_VictorSPX conveyer, WPI_VictorSPX intake, Joystick buttonPanel, DigitalInput prox1, DigitalInput prox2, DigitalInput prox3){
-        conveyerMotor = conveyer;
-        intakeMotor = intake;
-        this.buttonPanel = buttonPanel;
+        conveyerMotor = conveyer; //sets conveyerMoor to conveyer to use in code
+        intakeMotor = intake; //sets intakeMotor to intake to usein code
+        this.buttonPanel = buttonPanel; 
         this.prox1 = prox1;
         this.prox2 = prox2;
         this.prox3 = prox3;
@@ -25,15 +25,15 @@ public class IntakeConveyer{
 
     public void teleOpRun() {
     //if switch one is triggered it will turn on the conveyer
-    if (prox1.get() && isConveyerEnabled){
+    if (!prox1.get() && isConveyerEnabled){
       conveyerMotor.set(.5);
     }
     // if switch 2 is triggered, it will turn off the conveyer
-    if (prox2.get()){
+    if (!prox2.get()){
       conveyerMotor.set(0);
     }
     // if switch 3 is triggered, it will turn off the intake and make the conveyer not trigger using switch 1
-    if (prox3.get() && !isDumping){
+    if (!prox3.get() && !isDumping){
       isConveyerEnabled = false;
       intakeMotor.set(0);
     }
@@ -46,7 +46,9 @@ public class IntakeConveyer{
       conveyerMotor.set(1);
       isDumping = true;
     }
-    if (isDumping = true && !prox1.get() && !prox2.get() && !prox3.get()){
+
+
+    if (isDumping = true && prox1.get() && prox2.get() && prox3.get()){
       isDumping = false;
       conveyerMotor.set(0);
       intakeMotor.set(1);
@@ -63,7 +65,7 @@ public class IntakeConveyer{
       conveyerMotor.set(1);
       isDumping = true;
     }
-    if (isDumping = true && !prox1.get() && !prox2.get() && !prox3.get()){
+    if (isDumping = true && prox1.get() && prox2.get() && prox3.get()){
       isDumping = false;
       conveyerMotor.set(0);
       intakeMotor.set(1);

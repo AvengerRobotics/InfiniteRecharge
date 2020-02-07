@@ -1,12 +1,12 @@
 package frc.robot;
 
-import edu.wpi.first.wpilibj.util.Color;
-import com.revrobotics.ColorSensorV3;
-import com.revrobotics.ColorMatchResult;
-import com.revrobotics.ColorMatch;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.util.Color; //color
+import com.revrobotics.ColorSensorV3; //color sensor
+import com.revrobotics.ColorMatchResult; //reading from color sensor
+import com.revrobotics.ColorMatch; //color sensor is reading the right color
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard; //to display colors on smartdashboared
 
-import java.util.HashMap;
+import java.util.HashMap; //color map
 import java.util.Map;
 
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX; //The VictorSPX motor controllers
@@ -14,10 +14,9 @@ import edu.wpi.first.wpilibj.Joystick; //The controller
    
 public class ColorSensorCode{
     private WPI_VictorSPX controlPanelMotor; //Creates the object for the WoF motors
-    private Joystick buttonPanel;
-
-    private ColorSensorV3 colorSensor; 
-    private final ColorMatch colorMatcher = new ColorMatch();
+    private Joystick buttonPanel; //creates the button panel
+    private ColorSensorV3 colorSensor; //creates the sensor
+    private final ColorMatch colorMatcher = new ColorMatch(); 
     // the numbers used to match color sensor values to colors
     private final Color kBlueTarget = ColorMatch.makeColor(0.143, 0.427, 0.429);
     private final Color kGreenTarget = ColorMatch.makeColor(0.197, 0.561, 0.240);
