@@ -48,8 +48,8 @@ public class Robot extends TimedRobot {
   private SendableChooser<String> autoChoice;//for choosing the autonomous in the driver station
   private SimpleAuto simpleAuto;//simple testing autonomous
   private AdvancedAuto1 advancedAuto1;//advanced autonomous code that dumps balls
-  private GripPipeline gripPipeline;
-  private VisionThread visionThread;
+  // private GripPipeline gripPipeline;
+  // private VisionThread visionThread;
   // private MjpegServer mjpegServer2;
   private UsbCamera usbCamera;
   // private CvSink cvSink;
@@ -77,7 +77,7 @@ public class Robot extends TimedRobot {
     controller = new Gamepad(new Joystick(0)); // Creates the controller on USB 0
     buttonPanel = new Joystick(1); // Creates the button panel on USB 1
 
-    winchNLift = new WinchNLift(new WPI_VictorSPX(9), new WPI_VictorSPX(10), new WPI_VictorSPX(7), controller);  // assigns the winch motors on CAN 9 and CAN 10
+    winchNLift = new WinchNLift(new WPI_VictorSPX(9), new WPI_VictorSPX(10), controller);  // assigns the lift motors on CAN 9 and CAN 10
     intakeConveyer = new IntakeConveyer(new WPI_VictorSPX(6), new WPI_VictorSPX(8), buttonPanel, new DigitalInput(0), new DigitalInput(1), new DigitalInput(2));//creates the intake conveyor as an object
     intakeSolenoid = new IntakeSolenoid(new DoubleSolenoid(2, 3), controller);//creates the cylinder for the intake as an object
     colorSensorCode = new ColorSensorCode(new WPI_VictorSPX(5), buttonPanel, new ColorSensorV3(I2C.Port.kOnboard));//Assigns the WoF motor to mprt 5 and the I2C port on the roborio to the color sensor

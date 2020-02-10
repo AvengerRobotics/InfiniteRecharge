@@ -114,7 +114,7 @@ public class ColorSensorCode{
     if (buttonPanel.getRawButton(9)){ //stops over green
       controlPanelMotor.set(1);
       isColorActive = true;
-      colorDetecting = "Yellow";//stops over green
+      colorDetecting = "Yellow";
     }
     if (isColorActive && currentColor.equals(colorMap.get(colorDetecting))){
       controlPanelMotor.set(0);

@@ -8,21 +8,21 @@ import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 
 
 public class WinchNLift {
-    private SpeedControllerGroup winchMotors; //Creates the object for the winch motors
-    private WPI_VictorSPX liftMotor;
+    private SpeedControllerGroup motors; //Creates the object for the winch motors
+    // private WPI_VictorSPX liftMotor;
     //private Joystick buttonPanel;
     private Gamepad controller;
     private int liftValue;
 
 
-    public WinchNLift(WPI_VictorSPX winch1, WPI_VictorSPX winch2, WPI_VictorSPX liftMotor, Gamepad controller){
-      winchMotors = new SpeedControllerGroup(winch1, winch2);
-      this.liftMotor = liftMotor;
+    public WinchNLift(WPI_VictorSPX leftMotor, WPI_VictorSPX rightMotor, Gamepad controller){
+      motors = new SpeedControllerGroup(leftMotor, rightMotor);
+      // this.liftMotor = liftMotor;
       this.controller = controller;
     }
 
     public void teleOpRun() {
-        LiftControls(); //method for lift motor code below
+        // LiftControls(); //method for lift motor code below
 
         
         WinchMotor(); //method for winch motor below
@@ -31,20 +31,20 @@ public class WinchNLift {
       private void WinchMotor() {
         //winch motor controls
         if (controller.getB()){
-          winchMotors.set(controller.getRT());
+          motors.set(controller.getRT());
         } else {
-          winchMotors.set(controller.getRT() * -1);
+          motors.set(controller.getRT() * -1);
         }
       }
     
-      private void LiftControls() {
-        if(controller.getLB()){  //If the LB Button is pressed, then the lift motor speed will be set to 1
-            liftValue = 1;
-        } else if(controller.getRB()){ //If the RB Button is pressed, then the lift motor speed will be set to -1
-            liftValue = -1;
-        } else if(!controller.getRB() && !controller.getLB()){  //If neither LB or RB button is pressed, then the lift motor speed will be set to 0
-            liftValue = 0;
-        }
-          liftMotor.set(liftValue); //Sets the lift motor speed to the variable liftMotorValue
-      }
+      // private void LiftControls() {
+      //   if(controller.getLB()){  //If the LB Button is pressed, then the lift motor speed will be set to 1
+      //       liftValue = 1;
+      //   } else if(controller.getRB()){ //If the RB Button is pressed, then the lift motor speed will be set to -1
+      //       liftValue = -1;
+      //   } else if(!controller.getRB() && !controller.getLB()){  //If neither LB or RB button is pressed, then the lift motor speed will be set to 0
+      //       liftValue = 0;
+      //   }
+      //     liftMotor.set(liftValue); //Sets the lift motor speed to the variable liftMotorValue
+      // }
     }

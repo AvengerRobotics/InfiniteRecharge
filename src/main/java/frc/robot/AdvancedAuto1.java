@@ -15,18 +15,17 @@ public class AdvancedAuto1{
     }
 
     public void run(){
-        if (timer.get() < 2){
-            driveTrain.tankDrive(-.5, -.5);
-        }
-        if (timer.get() > 2 && timer.get() < 4){
-            driveTrain.tankDrive(0, 0);
-            intakeConveyer.dump();
-        }
-        if (timer.get() > 3 && !intakeConveyer.isDumping()){
-            driveTrain.tankDrive(.5, .5);
-        }
-        if (timer.get() > 7){
-            driveTrain.tankDrive(0, 0);
+        // if (timer.get() < 2){
+        //     driveTrain.tankDrive(-.5, -.5);
+        // }
+        // if (timer.get() > 2 && timer.get() < 4){
+        //     driveTrain.tankDrive(0, 0);
+        //     intakeConveyer.dump();
+        // }
+        // if (timer.get() > 3 && !intakeConveyer.isDumping()){
+        //     driveTrain.tankDrive(.5, .5);
+        // }
+        // if (timer.get() > 7){
+        //     driveTrain.tankDrive(0, 0);
         }
     }
-}
