@@ -9,7 +9,7 @@ package frc.robot; //The robot
 
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Joystick; //The controller
-// import edu.wpi.first.wpilibj.Servo; //servo controls
+//import edu.wpi.first.wpilibj.Servo; //servo controls
 import edu.wpi.first.wpilibj.SpeedControllerGroup; //Groups two speed controllers
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX; //The VictorSPX motor controllers
 import edu.wpi.first.wpilibj.TimedRobot; //The class that a user program is based on -- not much other info is given
@@ -20,20 +20,20 @@ import com.revrobotics.ColorSensorV3; //color sensor
 import edu.wpi.first.wpilibj.Compressor; //compressor
 import edu.wpi.first.wpilibj.DigitalInput; //proximity sensors
 import edu.wpi.first.cameraserver.CameraServer; //USB camera
-import edu.wpi.first.vision.VisionRunner;
-import edu.wpi.first.vision.VisionThread;
+//import edu.wpi.first.vision.VisionRunner;
+//import edu.wpi.first.vision.VisionThread;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser; //SmartDashboard 
 
-// import edu.wpi.cscore.CvSink;
-// import edu.wpi.cscore.CvSource;
-// import edu.wpi.cscore.MjpegServer;
+//  import edu.wpi.cscore.CvSink;
+//  import edu.wpi.cscore.CvSource;
+//  import edu.wpi.cscore.MjpegServer;
 import edu.wpi.cscore.UsbCamera;
 // import edu.wpi.cscore.VideoMode.PixelFormat;
 
 public class Robot extends TimedRobot { 
   private SpeedControllerGroup leftMotors; //Creates the object for the left motors
   private SpeedControllerGroup rightMotors; //Creates the object for the right motors
-  // private Servo servo;
+  //private Servo servo;
   private DifferentialDrive driveTrain; //Creates the object for the drivetrain
 
   private Gamepad controller; //Creates the object for the contoller
@@ -56,11 +56,11 @@ public class Robot extends TimedRobot {
   private Timer timer; //creates timer
   private String currentAuto;//autonomous that is being run
 
-  private static final int IMG_WIDTH = 320;
-  private static final int IMG_HEIGHT = 240;
-  private double centerX = 0.0;
+  //private static final int IMG_WIDTH = 320;
+  //private static final int IMG_HEIGHT = 240;
+  //private double centerX = 0.0;
 
-  private final Object imgLock = new Object();
+  //private final Object imgLock = new Object();
 
   @Override
   public void robotInit() {

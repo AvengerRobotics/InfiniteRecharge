@@ -75,7 +75,7 @@ public class ColorSensorCode{
     SmartDashboard.putNumber("Blue", detectedColor.blue);
     SmartDashboard.putNumber("Confidence", match.confidence);
     SmartDashboard.putString("Detected Color", currentColor);
-    //color sensor code - current color is stored in currentColor
+    //color  code - current color is stored in currentColor
     detectedColor = colorSensor.getColor();
     match = colorMatcher.matchClosestColor(detectedColor);
  
