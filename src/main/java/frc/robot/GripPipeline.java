@@ -1,5 +1,3 @@
-package frc.robot;	
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -8,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.HashMap;
+
+import edu.wpi.first.wpilibj.vision.VisionPipeline;
 
 import org.opencv.core.*;
 import org.opencv.core.Core.*;
@@ -23,7 +23,7 @@ import org.opencv.objdetect.*;
 *
 * @author GRIP
 */
-public class GripPipeline {
+public class GripPipeline implements VisionPipeline {
 
 	//Outputs
 	private Mat cvResizeOutput = new Mat();
@@ -31,6 +31,9 @@ public class GripPipeline {
 	private Mat cvErodeOutput = new Mat();
 	private Mat maskOutput = new Mat();
 	private MatOfKeyPoint findBlobsOutput = new MatOfKeyPoint();
+	private ArrayList<Line> findLinesOutput = new ArrayList<Line>();
+	private ArrayList<Line> filterLinesOutput = new ArrayList<Line>();
+	private ArrayList<MatOfPoint> findContoursOutput = new ArrayList<MatOfPoint>();
 
 	static {
 		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
@@ -39,27 +42,27 @@ public class GripPipeline {
 	/**
 	 * This is the primary method that runs the entire pipeline and updates the outputs.
 	 */
-	public void process(Mat source0) {
+	@Override	public void process(Mat source0) {
 		// Step CV_resize0:
 		Mat cvResizeSrc = source0;
 		Size cvResizeDsize = new Size(0, 0);
-		double cvResizeFx = 1.25;
-		double cvResizeFy = 1.25;
+		double cvResizeFx = 0.75;
+		double cvResizeFy = 0.75;
 		int cvResizeInterpolation = Imgproc.INTER_LINEAR;
 		cvResize(cvResizeSrc, cvResizeDsize, cvResizeFx, cvResizeFy, cvResizeInterpolation, cvResizeOutput);
 
 		// Step HSV_Threshold0:
 		Mat hsvThresholdInput = cvResizeOutput;
-		double[] hsvThresholdHue = {0.0, 58.66894197952218};
-		double[] hsvThresholdSaturation = {116.95143884892086, 233.24232081911265};
-		double[] hsvThresholdValue = {0.0, 255.0};
+		double[] hsvThresholdHue = {21.043165467625897, 121.94187721590131};
+		double[] hsvThresholdSaturation = {0.0, 255.0};
+		double[] hsvThresholdValue = {135.29676258992808, 255.0};
 		hsvThreshold(hsvThresholdInput, hsvThresholdHue, hsvThresholdSaturation, hsvThresholdValue, hsvThresholdOutput);
 
 		// Step CV_erode0:
 		Mat cvErodeSrc = hsvThresholdOutput;
 		Mat cvErodeKernel = new Mat();
 		Point cvErodeAnchor = new Point(-1, -1);
-		double cvErodeIterations = 1;
+		double cvErodeIterations = 12.0;
 		int cvErodeBordertype = Core.BORDER_CONSTANT;
 		Scalar cvErodeBordervalue = new Scalar(-1);
 		cvErode(cvErodeSrc, cvErodeKernel, cvErodeAnchor, cvErodeIterations, cvErodeBordertype, cvErodeBordervalue, cvErodeOutput);
@@ -71,10 +74,25 @@ public class GripPipeline {
 
 		// Step Find_Blobs0:
 		Mat findBlobsInput = maskOutput;
-		double findBlobsMinArea = 180.0;
+		double findBlobsMinArea = 20.0;
 		double[] findBlobsCircularity = {0.0, 1.0};
 		boolean findBlobsDarkBlobs = false;
 		findBlobs(findBlobsInput, findBlobsMinArea, findBlobsCircularity, findBlobsDarkBlobs, findBlobsOutput);
+
+		// Step Find_Lines0:
+		Mat findLinesInput = maskOutput;
+		findLines(findLinesInput, findLinesOutput);
+
+		// Step Filter_Lines0:
+		ArrayList<Line> filterLinesLines = findLinesOutput;
+		double filterLinesMinLength = 20.0;
+		double[] filterLinesAngle = {0.0, 163.41296928327645};
+		filterLines(filterLinesLines, filterLinesMinLength, filterLinesAngle, filterLinesOutput);
+
+		// Step Find_Contours0:
+		Mat findContoursInput = maskOutput;
+		boolean findContoursExternalOnly = false;
+		findContours(findContoursInput, findContoursExternalOnly, findContoursOutput);
 
 	}
 
@@ -116,6 +134,30 @@ public class GripPipeline {
 	 */
 	public MatOfKeyPoint findBlobsOutput() {
 		return findBlobsOutput;
+	}
+
+	/**
+	 * This method is a generated getter for the output of a Find_Lines.
+	 * @return ArrayList<Line> output from Find_Lines.
+	 */
+	public ArrayList<Line> findLinesOutput() {
+		return findLinesOutput;
+	}
+
+	/**
+	 * This method is a generated getter for the output of a Filter_Lines.
+	 * @return ArrayList<Line> output from Filter_Lines.
+	 */
+	public ArrayList<Line> filterLinesOutput() {
+		return filterLinesOutput;
+	}
+
+	/**
+	 * This method is a generated getter for the output of a Find_Contours.
+	 * @return ArrayList<MatOfPoint> output from Find_Contours.
+	 */
+	public ArrayList<MatOfPoint> findContoursOutput() {
+		return findContoursOutput;
 	}
 
 
@@ -246,6 +288,86 @@ public class GripPipeline {
 		}
 
 		blobDet.detect(input, blobList);
+	}
+
+	public static class Line {
+		public final double x1, y1, x2, y2;
+		public Line(double x1, double y1, double x2, double y2) {
+			this.x1 = x1;
+			this.y1 = y1;
+			this.x2 = x2;
+			this.y2 = y2;
+		}
+		public double lengthSquared() {
+			return Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2);
+		}
+		public double length() {
+			return Math.sqrt(lengthSquared());
+		}
+		public double angle() {
+			return Math.toDegrees(Math.atan2(y2 - y1, x2 - x1));
+		}
+	}
+	/**
+	 * Finds all line segments in an image.
+	 * @param input The image on which to perform the find lines.
+	 * @param lineList The output where the lines are stored.
+	 */
+	private void findLines(Mat input, ArrayList<Line> lineList) {
+		final LineSegmentDetector lsd = Imgproc.createLineSegmentDetector();
+		final Mat lines = new Mat();
+		lineList.clear();
+		if (input.channels() == 1) {
+			lsd.detect(input, lines);
+		} else {
+			final Mat tmp = new Mat();
+			Imgproc.cvtColor(input, tmp, Imgproc.COLOR_BGR2GRAY);
+			lsd.detect(tmp, lines);
+		}
+		if (!lines.empty()) {
+			for (int i = 0; i < lines.rows(); i++) {
+				lineList.add(new Line(lines.get(i, 0)[0], lines.get(i, 0)[1],
+					lines.get(i, 0)[2], lines.get(i, 0)[3]));
+			}
+		}
+	}
+
+	/**
+	 * Filters out lines that do not meet certain criteria.
+	 * @param inputs The lines that will be filtered.
+	 * @param minLength The minimum length of a line to be kept.
+	 * @param angle The minimum and maximum angle of a line to be kept.
+	 * @param outputs The output lines after the filter.
+	 */
+	private void filterLines(List<Line> inputs,double minLength,double[] angle,
+		List<Line> outputs) {
+		outputs = inputs.stream()
+				.filter(line -> line.lengthSquared() >= Math.pow(minLength,2))
+				.filter(line -> (line.angle() >= angle[0] && line.angle() <= angle[1])
+				|| (line.angle() + 180.0 >= angle[0] && line.angle() + 180.0 <= angle[1]))
+				.collect(Collectors.toList());
+	}
+
+	/**
+	 * Sets the values of pixels in a binary image to their distance to the nearest black pixel.
+	 * @param input The image on which to perform the Distance Transform.
+	 * @param type The Transform.
+	 * @param maskSize the size of the mask.
+	 * @param output The image in which to store the output.
+	 */
+	private void findContours(Mat input, boolean externalOnly,
+		List<MatOfPoint> contours) {
+		Mat hierarchy = new Mat();
+		contours.clear();
+		int mode;
+		if (externalOnly) {
+			mode = Imgproc.RETR_EXTERNAL;
+		}
+		else {
+			mode = Imgproc.RETR_LIST;
+		}
+		int method = Imgproc.CHAIN_APPROX_SIMPLE;
+		Imgproc.findContours(input, contours, hierarchy, mode, method);
 	}
 
 

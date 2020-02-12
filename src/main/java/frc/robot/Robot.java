@@ -17,11 +17,15 @@ import edu.wpi.first.wpilibj.Timer; //timer for auton
 import edu.wpi.first.wpilibj.drive.DifferentialDrive; //used for driving differential drive/skid-steer drive platforms
 import edu.wpi.first.wpilibj.I2C; //the I2C port on the Roborio
 import com.revrobotics.ColorSensorV3; //color sensor
+
+import org.opencv.core.Rect;
+import org.opencv.imgproc.Imgproc;
+
 import edu.wpi.first.wpilibj.Compressor; //compressor
 import edu.wpi.first.wpilibj.DigitalInput; //proximity sensors
 import edu.wpi.first.cameraserver.CameraServer; //USB camera
 //import edu.wpi.first.vision.VisionRunner;
-//import edu.wpi.first.vision.VisionThread;
+import edu.wpi.first.vision.VisionThread;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser; //SmartDashboard 
 
 //  import edu.wpi.cscore.CvSink;
@@ -49,18 +53,18 @@ public class Robot extends TimedRobot {
   private SimpleAuto simpleAuto;//simple testing autonomous
   private AdvancedAuto1 advancedAuto1;//advanced autonomous code that dumps balls
   // private GripPipeline gripPipeline;
-  // private VisionThread visionThread;
+  private VisionThread visionThread;
   // private MjpegServer mjpegServer2;
   private UsbCamera usbCamera;
   // private CvSink cvSink;
   private Timer timer; //creates timer
   private String currentAuto;//autonomous that is being run
 
-  //private static final int IMG_WIDTH = 320;
-  //private static final int IMG_HEIGHT = 240;
-  //private double centerX = 0.0;
+  private static final int IMG_WIDTH = 320;
+  private static final int IMG_HEIGHT = 240;
+  private double centerX = 0.0;
 
-  //private final Object imgLock = new Object();
+  private final Object imgLock = new Object();
 
   @Override
   public void robotInit() {
@@ -83,7 +87,14 @@ public class Robot extends TimedRobot {
     colorSensorCode = new ColorSensorCode(new WPI_VictorSPX(5), buttonPanel, new ColorSensorV3(I2C.Port.kOnboard));//Assigns the WoF motor to mprt 5 and the I2C port on the roborio to the color sensor
     usbCamera = CameraServer.getInstance().startAutomaticCapture("camera_serve_0", 1); // adds a source to the cameraserver from the camera on port 1
     usbCamera.setResolution(320, 240);
-    // visionThread = new VisionThread(usbCamera, new GripPipeline()); // need to add a listener, the official example code on docs.wpilib.org is several years old
+    visionThread = new VisionThread(usbCamera, new GripPipeline(), pipeline -> {
+      if (!pipeline.filterContoursOutput().isEmpty()) {
+          Rect r = Imgproc.boundingRect(pipeline.filterContoursOutput().get(0));
+          synchronized (imgLock) {
+              centerX = r.x + (r.width / 2);
+          }
+      }
+  });
     // visionThread.start();
 
     // usbCamera2 = CameraServer.getInstance().startAutomaticCapture("camera_serve_0", 0); // adds a source to the cameraserver from the camera on port 
