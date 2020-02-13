@@ -81,21 +81,22 @@ public class Robot extends TimedRobot {
     controller = new Gamepad(new Joystick(0)); // Creates the controller on USB 0
     buttonPanel = new Joystick(1); // Creates the button panel on USB 1
 
-    winchNLift = new WinchNLift(new WPI_VictorSPX(9), new WPI_VictorSPX(10), controller);  // assigns the lift motors on CAN 9 and CAN 10
-    intakeConveyer = new IntakeConveyer(new WPI_VictorSPX(6), new WPI_VictorSPX(8), buttonPanel, new DigitalInput(0), new DigitalInput(1), new DigitalInput(2));//creates the intake conveyor as an object
-    intakeSolenoid = new IntakeSolenoid(new DoubleSolenoid(2, 3), controller);//creates the cylinder for the intake as an object
+    winchNLift = new WinchNLift(new WPI_VictorSPX(8), new WPI_VictorSPX(9), controller);  // assigns the lift motors on CAN 8 and CAN 9 - 8 is lift1 and 9 is lift2
+    intakeConveyer = new IntakeConveyer(new WPI_VictorSPX(6), new WPI_VictorSPX(7), buttonPanel, new DigitalInput(0), new DigitalInput(1), new DigitalInput(2), new DoubleSolenoid(2, 3), controller);//creates the intake conveyor as an object 
+    //intakeSolenoid = new IntakeSolenoid(new DoubleSolenoid(2, 3), controller);//creates the cylinder for the intake as an object
     colorSensorCode = new ColorSensorCode(new WPI_VictorSPX(5), buttonPanel, new ColorSensorV3(I2C.Port.kOnboard));//Assigns the WoF motor to mprt 5 and the I2C port on the roborio to the color sensor
     usbCamera = CameraServer.getInstance().startAutomaticCapture("camera_serve_0", 1); // adds a source to the cameraserver from the camera on port 1
     usbCamera.setResolution(320, 240);
-    visionThread = new VisionThread(usbCamera, new GripPipeline(), pipeline -> {
-      if (!pipeline.filterContoursOutput().isEmpty()) {
-          Rect r = Imgproc.boundingRect(pipeline.filterContoursOutput().get(0));
-          synchronized (imgLock) {
-              centerX = r.x + (r.width / 2);
-          }
-      }
-  });
-    // visionThread.start();
+
+  //   visionThread = new VisionThread(usbCamera, new VisionContour(), pipeline -> {
+  //     if (!pipeline.filterContoursOutput().isEmpty()) {
+  //         Rect r = Imgproc.boundingRect(pipeline.filterContoursOutput().get(0));
+  //         synchronized (imgLock) {
+  //             centerX = r.x + (r.width / 2);
+  //         }
+  //     }
+  // });
+  //    visionThread.start();
 
     // usbCamera2 = CameraServer.getInstance().startAutomaticCapture("camera_serve_0", 0); // adds a source to the cameraserver from the camera on port 
 
@@ -123,7 +124,7 @@ public class Robot extends TimedRobot {
     //Sets tankDrive to the inverse of the values from the joysticks, leftStick value is 1 and rightStick value is 5
     driveTrain.tankDrive((controller.getLJoystickY()), (controller.getRJoystickY()));
     intakeConveyer.teleOpRun(); //method for intake and conveyer controls
-    intakeSolenoid.teleOpRun(); //method for solenoid controls
+   // intakeSolenoid.teleOpRun(); //method for solenoid controls
     colorSensorCode.teleOpRun(); //method for color sensor
     winchNLift.teleOpRun(); //method for winch and lift controls
     compressor.start(); //starts compressor in the start of teleop
@@ -134,8 +135,8 @@ public class Robot extends TimedRobot {
 @Override
   public void autonomousInit(){
     compressor.start();//turns on compressor when the robot is initialized in autonomous
-    intakeSolenoid.extend();
-    intakeSolenoid.stop();
+    //intakeSolenoid.extend();
+    //intakeSolenoid.stop();
     timer.reset();
     timer.start();
     currentAuto = autoChoice.getSelected();
